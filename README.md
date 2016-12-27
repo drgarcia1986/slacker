@@ -1,4 +1,6 @@
 # Slacker
+[![Build Status](https://travis-ci.org/drgarcia1986/slacker.svg)](https://travis-ci.org/drgarcia1986/slacker)
+
 A simple slack post message integration.
 
 ## Usage

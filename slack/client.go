@@ -30,6 +30,8 @@ type slackResponse struct {
 	Error string `json:"error"`
 }
 
+const slackUrl = "https://slack.com/api/chat.postMessage"
+
 // PostMessage post a message in slack organization defined by token integration
 // on a specified channel.
 // The avatar can be a url or an emoji (e.g. :scream:)
@@ -37,11 +39,7 @@ func (c *Client) PostMessage(channel, username, avatar, message string) error {
 	payload := buildPayload(c.Token, channel, username, avatar, message)
 	data := bytes.NewBufferString(payload)
 
-	resp, err := http.Post(
-		"https://slack.com/api/chat.postMessage",
-		"application/x-www-form-urlencoded",
-		data,
-	)
+	resp, err := http.Post(slackUrl, "application/x-www-form-urlencoded", data)
 	if err != nil {
 		return err
 	}
