@@ -1,23 +1,22 @@
 package slack
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"testing"
-
-	httpmock "gopkg.in/jarcoal/httpmock.v1"
 )
 
 const okResponse = `{"ok": true, "error": ""}`
 
 func TestSuccessfulPostMessage(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, okResponse)
+	}))
+	defer ts.Close()
 
-	httpmock.RegisterResponder("POST", slackUrl,
-		httpmock.NewStringResponder(201, okResponse),
-	)
-
+	slackUrl = ts.URL
 	client := New("token")
 	err := client.PostMessage("c", "u", "a", "m")
 	if err != nil {
@@ -26,13 +25,12 @@ func TestSuccessfulPostMessage(t *testing.T) {
 }
 
 func TestFailedPostMessage(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, `{"ok": false, "error": "foo"}`)
+	}))
+	defer ts.Close()
 
-	httpmock.RegisterResponder("POST", slackUrl,
-		httpmock.NewStringResponder(201, `{"ok": false, "error": "foo"}`),
-	)
-
+	slackUrl = ts.URL
 	client := New("token")
 	err := client.PostMessage("c", "u", "a", "m")
 	if err.Error() != "foo" {
@@ -41,18 +39,15 @@ func TestFailedPostMessage(t *testing.T) {
 }
 
 func TestPostMessageCheckPayload(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
-
 	var payloadRequested string
-	httpmock.RegisterResponder("POST", slackUrl,
-		func(req *http.Request) (*http.Response, error) {
-			payload, _ := ioutil.ReadAll(req.Body)
-			payloadRequested = string(payload)
-			return httpmock.NewStringResponse(201, okResponse), nil
-		},
-	)
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		payload, _ := ioutil.ReadAll(r.Body)
+		payloadRequested = string(payload)
+		fmt.Fprintln(w, okResponse)
+	}))
+	defer ts.Close()
 
+	slackUrl = ts.URL
 	client := New("t")
 	err := client.PostMessage("c", "u", "a", "m")
 	if err != nil {

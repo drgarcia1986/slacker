@@ -30,7 +30,7 @@ type slackResponse struct {
 	Error string `json:"error"`
 }
 
-const slackUrl = "https://slack.com/api/chat.postMessage"
+var slackUrl = "https://slack.com/api/chat.postMessage"
 
 // PostMessage post a message in slack organization defined by token integration
 // on a specified channel.
