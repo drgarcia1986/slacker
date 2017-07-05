@@ -22,6 +22,6 @@ Usage of slacker
 > You can set the default integration token on environment variable `SLACKTOKEN`
 
 ### Example
-````
+```
 $ slacker -c '#general' -u 'Bot Test' -m 'This is a test!'
 ```
